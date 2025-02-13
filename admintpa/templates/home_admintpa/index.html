@@ -1,0 +1,339 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Absensi TPA Nurul Askar</title>
+    <meta
+      content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+      name="viewport"
+    />
+    <!-- <link
+      rel="icon"
+      href="{% static "img/kaiadmin/favicon.ico" %}"
+      type="image/x-icon"
+    /> -->
+
+    <!-- Fonts and icons -->
+    <script src="{% static "js/plugin/webfont/webfont.min.js" %}"></script>
+    <script>
+      WebFont.load({
+        google: { families: ["Public Sans:300,400,500,600,700"] },
+        custom: {
+          families: [
+            "Font Awesome 5 Solid",
+            "Font Awesome 5 Regular",
+            "Font Awesome 5 Brands",
+            "simple-line-icons",
+          ],
+          urls: "{% static 'css/fonts.min.css' %}"
+        },
+        active: function () {
+          sessionStorage.fonts = true;
+        },
+      });
+    </script>
+
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}" />
+    <link rel="stylesheet" href="{% static "css/plugins.min.css" %}" />
+    <link rel="stylesheet" href="{% static "css/kaiadmin.min.css" %}" />
+
+    <!-- CSS Just for demo purpose, don't include it in your project -->
+    <link rel="stylesheet" href="{% static "css/demo.css" %}" />
+
+    <link href="{% static "fontawesomefree/css/fontawesome.css" %}" rel="stylesheet" type="text/css">
+    <link href="{% static "fontawesomefree/css/brands.css" %}" rel="stylesheet" type="text/css">
+    <link href="{% static "fontawesomefree/css/solid.css" %}" rel="stylesheet" type="text/css">
+    
+  </head>
+  <body>
+    <div class="wrapper">
+      <!-- Sidebar -->
+      {% include "layout_admintpa/sidebar.html" %}
+      <!-- End Sidebar -->
+
+      <div class="main-panel">
+
+        {% include "layout_admintpa/header.html" %}
+
+        <div class="container">
+          <div class="page-inner">
+            <div
+              class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4"
+            >
+              <div>
+                <h3 class="fw-bold mb-3">Dashboard</h3>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-sm-6 col-md-3">
+                <div class="card card-stats card-round">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-icon">
+                        <div
+                          class="icon-big text-center icon-primary bubble-shadow-small"
+                        >
+                          <i class="fas fa-users"></i>
+                        </div>
+                      </div>
+                      <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                          <p class="card-category">Siswa</p>
+                          <h4 class="card-title">{{jml_siswa}}</h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-md-3">
+                <div class="card card-stats card-round">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-icon">
+                        <div
+                          class="icon-big text-center icon-info bubble-shadow-small"
+                        >
+                        <i class="fa-solid fa-user-tie"></i>
+                        </div>
+                      </div>
+                      <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                          <p class="card-category">Guru</p>
+                          <h4 class="card-title">{{jml_guru}}</h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-md-3">
+                <div class="card card-stats card-round">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-icon">
+                        <div
+                          class="icon-big text-center icon-success bubble-shadow-small">
+                            <i class="fa-solid fa-layer-group"></i>
+                        </div>
+                      </div>
+                      <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                          <p class="card-category">Kelas</p>
+                          <h4 class="card-title">{{jml_kelas}}</h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-sm-6 col-md-3">
+                <div class="card card-stats card-round">
+                  <div class="card-body">
+                    <div class="row align-items-center">
+                      <div class="col-icon">
+                        <div
+                          class="icon-big text-center icon-secondary bubble-shadow-small">
+                            <i class="fa-solid fa-user"></i>
+                        </div>
+                      </div>
+                      <div class="col col-stats ms-3 ms-sm-0">
+                        <div class="numbers">
+                          <p class="card-category">Admin</p>
+                          <h4 class="card-title">{{jml_admin}}</h4>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="card card-round">
+                  <div class="card-body">
+                    <div class="card-head-row card-tools-still-right">
+                      <div class="card-title">User Terbaru</div>
+                      <div class="card-tools">
+                        <div class="dropdown">
+                          <button
+                            class="btn btn-icon btn-clean me-0"
+                            type="button"
+                            id="dropdownMenuButton"
+                            data-bs-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                          >
+                          </button>
+                          <div
+                            class="dropdown-menu"
+                            aria-labelledby="dropdownMenuButton"
+                          >
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#"
+                              >Something else here</a
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="card-list py-4">
+                      {% for user_data in user %}
+                        <div class="item-list">
+                          <div class="avatar">
+                            <img
+                            src="{{ user_data.foto1.url }}"
+                              alt="..."
+                              class="avatar-img rounded-circle"
+                            />
+                          </div>
+                          <div class="info-user ms-3">
+                            <div class="username">{{user_data.nama}}</div>
+                            <div class="status">{{user_data.role}}</div>
+                          </div>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-8">
+                <div class="card card-round">
+                  <div class="card-header">
+                    <div class="card-head-row card-tools-still-right">
+                      <div class="card-title">Riwayat Absensi Terbaru</div>
+                      <div class="card-tools">
+                        <div class="dropdown">
+                          <button
+                            class="btn btn-icon btn-clean me-0"
+                            type="button"
+                            id="dropdownMenuButton"
+                            data-bs-toggle="dropdown"
+                            aria-haspopup="true"
+                            aria-expanded="false"
+                          >
+                          </button>
+                          <div
+                            class="dropdown-menu"
+                            aria-labelledby="dropdownMenuButton"
+                          >
+                            <a class="dropdown-item" href="#">Action</a>
+                            <a class="dropdown-item" href="#">Another action</a>
+                            <a class="dropdown-item" href="#"
+                              >Something else here</a
+                            >
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="card-body p-0">
+                    <div class="table-responsive">
+                      <!-- Projects table -->
+                      <table class="table align-items-center mb-0">
+                        <thead class="thead-light">
+                          <tr>
+                            <th scope="col">Tanggal</th>
+                            <th scope="col" class="text-end">Kelas</th>
+                            <th scope="col" class="text-end">Pelajaran</th>
+                            <th scope="col" class="text-end">Siswa</th>
+                            <th scope="col" class="text-end">Keterangan</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for kehadiran_item in kehadiran %}
+                            <tr>
+                              <th scope="row">  
+                                {{kehadiran_item.tanggal_absensi}}
+                              </th>
+                              <td class="text-end">{{kehadiran_item.nama_kelas}}</td>
+                              <td class="text-end">{{kehadiran_item.nama_mapel}}</td>
+                              <td class="text-end">{{kehadiran_item.nama_user}}</td>
+                              <td class="text-end">
+                                <span class="badge badge-success">{{kehadiran_item.keterangan_kehadiran}}</span>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div> 
+          </div>
+        </div>
+      <!-- End Custom template -->
+      </div>
+    </div>
+    <!--   Core JS Files   -->
+    <script src="{% static "js/core/jquery-3.7.1.min.js" %}"></script>
+    <script src="{% static "js/core/popper.min.js" %}"></script>
+    <script src="{% static "js/core/bootstrap.min.js" $}"></script>
+
+    <!-- jQuery Scrollbar -->
+    <script src="{% static "js/plugin/jquery-scrollbar/jquery.scrollbar.min.js" %}"></script>
+
+    <!-- Chart JS -->
+    <script src="{% static "js/plugin/chart.js/chart.min.js" %}"></script>
+
+    <!-- jQuery Sparkline -->
+    <script src="{% static "js/plugin/jquery.sparkline/jquery.sparkline.min.js" %}"></script>
+
+    <!-- Chart Circle -->
+    <script src="{% static "js/plugin/chart-circle/circles.min.js" %}"></script>
+
+    <!-- Datatables -->
+    <script src="{% static "js/plugin/datatables/datatables.min.js" %}"></script>
+
+    <!-- Bootstrap Notify -->
+    <script src="{% static "js/plugin/bootstrap-notify/bootstrap-notify.min.js" %}"></script>
+
+    <!-- jQuery Vector Maps -->
+    <script src="{% static "js/plugin/jsvectormap/jsvectormap.min.js" %}"></script>
+    <script src="{% static "js/plugin/jsvectormap/world.js" %}"></script>
+
+    <!-- Sweet Alert -->
+    <script src="{% static "js/plugin/sweetalert/sweetalert.min.js" %}"></script>
+
+    <!-- Kaiadmin JS -->
+    <script src="{% static "js/kaiadmin.min.js" %}"></script>
+
+    <!-- Kaiadmin DEMO methods, don't include it in your project! -->
+    <!-- <script src="{% static "js/setting-demo.js" %}"></script>
+    <script src="{% static "js/demo.js" %}"></script> -->
+
+    <script>
+      $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
+        type: "line",
+        height: "70",
+        width: "100%",
+        lineWidth: "2",
+        lineColor: "#177dff",
+        fillColor: "rgba(23, 125, 255, 0.14)",
+      });
+
+      $("#lineChart2").sparkline([99, 125, 122, 105, 110, 124, 115], {
+        type: "line",
+        height: "70",
+        width: "100%",
+        lineWidth: "2",
+        lineColor: "#f3545d",
+        fillColor: "rgba(243, 84, 93, .14)",
+      });
+
+      $("#lineChart3").sparkline([105, 103, 123, 100, 95, 105, 115], {
+        type: "line",
+        height: "70",
+        width: "100%",
+        lineWidth: "2",
+        lineColor: "#ffa534",
+        fillColor: "rgba(255, 165, 52, .14)",
+      });
+    </script>
+  </body>
+</html>
+
