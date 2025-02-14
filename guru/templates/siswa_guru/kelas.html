@@ -64,45 +64,47 @@
                   <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center">
-                            <h4 class="card-title">Laporan Absnesi Kelas {{kelas.nama}}</h4>
+                            <h4 class="card-title">Laporan Absensi</h4>
                           </div>
                     </div>
                     <div class="card-body">
                       <div class="table-responsive">
-                        <table
-                          id="basic-datatables"
-                          class="display table table-striped table-hover"
-                        >
-                          <thead>
-                            <tr>
-                              <th>Tanggal</th>
-                              <th>Kelas</th>
-                              <th>Pelajaran</th>
-                              <th>Siswa</th>
-                              <th>Keterangan</th>
-                            </tr>
-                          </thead>
-                          <tfoot>
-                            <tr>
-                              <th>Tanggal</th>
-                              <th>Kelas</th>
-                              <th>Pelajaran</th>
-                              <th>Siswa</th>
-                              <th>Keterangan</th>
-                            </tr>
-                          </tfoot>
-                          <tbody>
-                            {% for kehadiran_item in kehadiran %}
+                          <table
+                            id="basic-datatables"
+                            class="display table table-striped table-hover"
+                          >
+                            <thead>
                               <tr>
-                                <td>{{kehadiran_item.tanggal_absensi}}</td>
-                                <td>{{kehadiran_item.nama_kelas}}</td>
-                                <td>{{kehadiran_item.nama_mapel}}</td>
-                                <td>{{kehadiran_item.nama_user}}</td>
-                                <td>{{kehadiran_item.keterangan_kehadiran}}</td>
+                                <th>Kelas</th>
+                                <th>Deskripsi</th>
+                                <th>Aksi</th>
                               </tr>
-                            {% endfor %}
-                          </tbody>
-                        </table>
+                            </thead>
+                            <tfoot>
+                              <tr>
+                                  <th>Kelas</th>
+                                  <th>Deskripsi</th>
+                                  <th>Aksi</th>
+                              </tr>
+                            </tfoot>
+                            <tbody>
+                              {% for kelas_item in kelas %}
+                              <tr>
+                                <td>{{kelas_item.nama}}</td>
+                                <td>{{kelas_item.des}}</td>
+                                <td>
+                                  <div class="form-button-action">
+                                    <form action="kelas/" method="post">
+                                      {% csrf_token %}
+                                      <input type="text" name="id_kelas" hidden value="{{kelas_item.id}}">
+                                      <button type="submit" class="btn btn-warning mx-2">Lihat</button>
+                                    </form>
+                                  </div>
+                                </td>
+                              </tr>
+                              {% endfor %}
+                            </tbody>
+                          </table>
                       </div>
                     </div>
                   </div>

@@ -93,7 +93,7 @@
                 <div class="card card-round">
                   <div class="card-body">
                     <div class="card-head-row card-tools-still-right">
-                      <div class="card-title">Anggota Kelas Terbaru</div>
+                      <div class="card-title">Kelas</div>
                       <div class="card-tools">
                         <div class="dropdown">
                           <button
@@ -119,18 +119,14 @@
                       </div>
                     </div>
                     <div class="card-list py-4">
-                      {% for user_data in user %}
+                      {% for kelas_item in dtkelas %}
                         <div class="item-list">
-                          <div class="avatar">
-                            <img
-                            src="{{ user_data.foto1.url }}"
-                              alt="..."
-                              class="avatar-img rounded-circle"
-                            />
+                          <div>
+                            <i class="fa-solid fa-book"></i>
                           </div>
                           <div class="info-user ms-3">
-                            <div class="username">{{user_data.nama}}</div>
-                            <div class="status">{{user_data.role}}</div>
+                            <div class="username">{{kelas_item.nama}}</div>
+                            <div class="status">{{kelas_item.des}}</div>
                           </div>
                         </div>
                       {% endfor %}
@@ -175,6 +171,7 @@
                         <thead class="thead-light">
                           <tr>
                             <th scope="col">Tanggal</th>
+                            <th scope="col">Jam</th>
                             <th scope="col" class="text-end">Kelas</th>
                             <th scope="col" class="text-end">Pelajaran</th>
                             <th scope="col" class="text-end">Siswa</th>
@@ -187,6 +184,9 @@
                               <th scope="row">  
                                 {{kehadiran_item.tanggal_absensi}}
                               </th>
+                              <td>  
+                                {{kehadiran_item.jam|time:"H:i"}}
+                              </td>
                               <td class="text-end">{{kehadiran_item.nama_kelas}}</td>
                               <td class="text-end">{{kehadiran_item.nama_mapel}}</td>
                               <td class="text-end">{{kehadiran_item.nama_user}}</td>

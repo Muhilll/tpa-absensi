@@ -3,6 +3,8 @@ import os
 from django.conf import settings
 import shutil
 from django.contrib.auth.hashers import make_password
+from django.contrib import messages
+from django.urls import reverse
 
 # Create your views here.
 from django.shortcuts import render, redirect
@@ -16,6 +18,7 @@ def index(request):
     query = """
         SELECT admintpa_kehadiran.id AS id,
             admintpa_absensi.tanggal AS tanggal_absensi, 
+            admintpa_kehadiran.jam, 
             admintpa_kelas.nama AS nama_kelas, 
             admintpa_mapel.nama AS nama_mapel, 
             admintpa_user.nama AS nama_user, 
@@ -59,6 +62,11 @@ def tambah_siswa(request):
         foto1 = request.FILES['foto1']
         foto2 = request.FILES['foto2']
         foto3 = request.FILES['foto3']
+
+        user = User.objects.filter(username = username).first()
+        if user :
+            messages.error(request, "Username telah ada", extra_tags="duplicateUsername")
+            return redirect('/admintpa/siswa/tambah/')
         
         User.objects.create(
             username=username, 
@@ -143,6 +151,11 @@ def tambah_guru(request):
         foto1 = request.FILES['foto1']
         foto2 = request.FILES['foto2']
         foto3 = request.FILES['foto3']
+
+        user = User.objects.filter(username = username).first()
+        if user :
+            messages.error(request, "Username telah ada", extra_tags="duplicateUsername")
+            return redirect('/admintpa/guru/tambah/')
         
         User.objects.create(
             username=username, 
@@ -234,32 +247,35 @@ def tambah_kelas(request):
         return render(request, 'kelas_admintpa/tambah.html', {'guru': guru})
     
 def detail_kelas(request):
-    kelas = Kelas.objects.get(id = request.POST['id_kelas'])
+    kelas = Kelas.objects.get(id = request.GET['id_kelas'])
 
     query = """select admintpa_agtkelas.id as id, admintpa_user.nama, admintpa_user.tmpt_lahir, admintpa_user.tgl_lahir, 
     admintpa_user.jkl, admintpa_user.agama, admintpa_user.alamat, admintpa_user.notelp, 
     admintpa_user.foto1 as foto FROM admintpa_agtkelas 
-    INNER JOIN admintpa_user on admintpa_agtkelas.id_user = admintpa_user.id WHERE admintpa_agtkelas.id_kelas = """+request.POST['id_kelas']
+    INNER JOIN admintpa_user on admintpa_agtkelas.id_user = admintpa_user.id WHERE admintpa_agtkelas.id_kelas = %s"""
 
-    agtkelas = Agtkelas.objects.raw(query)
+    agtkelas = Agtkelas.objects.raw(query, [kelas.id])
     return render(request, 'kelas_admintpa/detail.html', {'agtkelas': agtkelas, 'kelas': kelas})
 
 def tambah_agtkelas(request):
-    kelas = Kelas.objects.get(id = request.GET['id_kelas'])
+    kelas = Kelas.objects.get(id = request.POST['id_kelas'])
     query = """
         SELECT * 
         FROM admintpa_user 
         WHERE id NOT IN (SELECT id_user FROM admintpa_agtkelas) and role = 'siswa'
     """
     siswa = User.objects.raw(query)
+    return render(request, 'kelas_admintpa/tambah-agt.html', {'siswa': siswa, 'kelas': kelas})
+    
+
+def proses_tambah_agtkelas(request):
     if request.method == 'POST':
         Agtkelas.objects.create(
             id_kelas = request.POST['id_kelas'],
             id_user = request.POST['id_siswa']
         )
         return redirect('/admintpa/kelas')
-    else:
-        return render(request, 'kelas_admintpa/tambah-agt.html', {'siswa': siswa, 'kelas': kelas})
+
 
 def hapus_agtkelas(request):
     agtkelas = Agtkelas.objects.get(id = request.POST['id_agtkelas'])
@@ -343,6 +359,7 @@ def laporan_kelas(request):
     query = """
     SELECT admintpa_kehadiran.id AS id,
            admintpa_absensi.tanggal AS tanggal_absensi, 
+           admintpa_kehadiran.jam, 
            admintpa_kelas.nama AS nama_kelas, 
            admintpa_mapel.nama AS nama_mapel, 
            admintpa_user.nama AS nama_user, 

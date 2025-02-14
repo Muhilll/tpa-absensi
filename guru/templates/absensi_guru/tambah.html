@@ -69,33 +69,27 @@
                             <h4 class="card-title">Tambah Absensi</h4>
                           </div>
                     </div>
-                    <form method="post">
+                    <form method="post" action="proses/">
                       {% csrf_token %}
                       <div class="card-body">
                         <div class="row">
                           <div class="col">
                             <div class="form-group">
                               <label for="email2">Mata Pelajaran</label>
+                              <input type="text" name="id_kelas" value="{{ id_kelas }}" hidden>
                               <input
                                 id="guru-nama"
                                 class="form-control"
-                                placeholder="Klik untuk memilih guru"
+                                placeholder="Klik untuk memilih mata pelajaran"
                                 data-bs-toggle="modal"
                                 data-bs-target="#guruModal"
                                 required
                               />
-                              <input
-                                id="guru-id"
-                                name="id_mapel"
-                                type="hidden"
-                              />
+                              <input id="guru-id" name="id_mapel" type="hidden" />
                             </div>
                             <div class="form-group">
                               <label for="email2">Nama</label>
-                              <input
-                                class="form-control"
-                                name="nama"
-                              />
+                              <input class="form-control" name="nama" required />
                             </div>
                             <div class="form-group">
                               <label for="email2">Tanggal</label>
@@ -103,14 +97,23 @@
                                 class="form-control"
                                 name="tanggal"
                                 type="date"
+                                value="{{ tanggal|date:'Y-m-d' }}"
+                                required
+                              />
+                            </div>
+                            <div class="form-group">
+                              <label for="email2">Batas Waktu</label>
+                              <input
+                                class="form-control"
+                                name="batas"
+                                type="time"
+                                value="{{ batas|time:'H:i' }}"
+                                required
                               />
                             </div>
                             <div class="form-group">
                               <label for="email2">Deskripsi</label>
-                              <input
-                                class="form-control"
-                                name="des"
-                              />
+                              <input class="form-control" name="des" required />
                             </div>
                           </div>
                         </div>
@@ -120,6 +123,7 @@
                         <button class="btn btn-danger" onclick="window.history.back();">Cancel</button>
                       </div>
                     </form>
+                    
                     <div class="modal fade" id="guruModal" tabindex="-1" aria-labelledby="guruModalLabel" aria-hidden="true">
                       <div class="modal-dialog modal-lg">
                         <div class="modal-content">

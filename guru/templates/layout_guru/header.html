@@ -1,5 +1,6 @@
 {% load static %}
 <div class="main-header">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <div class="main-header-logo">
       <!-- Logo Header -->
       <div class="logo-header" data-background-color="dark">
@@ -56,11 +57,29 @@
           </li>
           <li class="nav-item topbar-user dropdown hidden-caret">
             <span class="profile-username">
-              <a href="/auth/logout" class="btn btn-primary">Logout</a>
-            </span>
+              <a href="#" class="btn btn-primary" onclick="confirmLogout()">Logout</a>
+          </span>
         </li>
         </ul>
       </div>
     </nav>
     <!-- End Navbar -->
+    <script>
+      function confirmLogout() {
+          Swal.fire({
+              title: "Apakah Anda yakin ingin logout?",
+              text: "Anda akan keluar dari sesi ini.",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#d33",
+              cancelButtonColor: "#3085d6",
+              confirmButtonText: "Ya, Logout",
+              cancelButtonText: "Batal"
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  window.location.href = "/auth/logout"; // Redirect ke logout jika dikonfirmasi
+              }
+          });
+      }
+  </script>
   </div>

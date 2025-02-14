@@ -64,53 +64,47 @@
                   <div class="card">
                     <div class="card-header">
                         <div class="d-flex align-items-center">
-                            <h4 class="card-title">Laporan Absnesi</h4>
+                            <h4 class="card-title">Laporan Absensi</h4>
                           </div>
                     </div>
                     <div class="card-body">
                       <div class="table-responsive">
-                        <table
-                          id="basic-datatables"
-                          class="display table table-striped table-hover"
-                        >
-                          <thead>
-                            <tr>
-                              <th>Mata Pelajaran</th>
-                              <th>Nama</th>
-                              <th>Tanggal</th>
-                              <th>Deskripsi</th>
-                              <th>Aksi</th>
-                            </tr>
-                          </thead>
-                          <tfoot>
-                            <tr>
-                              <th>Mata Pelajaran</th>
-                              <th>Nama</th>
-                              <th>Tanggal</th>
-                              <th>Deskripsi</th>
-                              <th>Aksi</th>
-                            </tr>
-                          </tfoot>
-                          <tbody>
-                            {% for absensi_item in absensi %}
+                          <table
+                            id="basic-datatables"
+                            class="display table table-striped table-hover"
+                          >
+                            <thead>
                               <tr>
-                                <td>{{absensi_item.mapel}}</td>
-                                <td>{{absensi_item.nama}}</td>
-                                <td>{{absensi_item.tanggal}}</td>
-                                <td>{{absensi_item.des}}</td>
+                                <th>Kelas</th>
+                                <th>Deskripsi</th>
+                                <th>Aksi</th>
+                              </tr>
+                            </thead>
+                            <tfoot>
+                              <tr>
+                                  <th>Kelas</th>
+                                  <th>Deskripsi</th>
+                                  <th>Aksi</th>
+                              </tr>
+                            </tfoot>
+                            <tbody>
+                              {% for kelas_item in kelas %}
+                              <tr>
+                                <td>{{kelas_item.nama}}</td>
+                                <td>{{kelas_item.des}}</td>
                                 <td>
                                   <div class="form-button-action">
-                                    <form action="lihat/" method="post">
+                                    <form action="kelas/" method="get">
                                       {% csrf_token %}
-                                      <input type="text" name="id_absensi" hidden value="{{absensi_item.id}}">
-                                      <button type="submit" class="btn btn-primary mx-2">Lihat</button>
+                                      <input type="text" name="id_kelas" hidden value="{{kelas_item.id}}">
+                                      <button type="submit" class="btn btn-primary mx-2">Pilih</button>
                                     </form>
                                   </div>
                                 </td>
                               </tr>
-                            {% endfor %}
-                          </tbody>
-                        </table>
+                              {% endfor %}
+                            </tbody>
+                          </table>
                       </div>
                     </div>
                   </div>
@@ -194,3 +188,4 @@
     </script>
   </body>
 </html>
+

@@ -33,6 +33,7 @@
         },
       });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- CSS Files -->
     <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}" />
@@ -65,14 +66,14 @@
                     <div class="card-header">
                         <div class="d-flex align-items-center">
                             <h4 class="card-title">Laporan Absnesi</h4>
-                            <a href="tambah/"
-                              class="btn btn-primary btn-round ms-auto"
-                              data-bs-toggle="modal"
-                              data-bs-target="#addRowModal"
-                            >
-                              <i class="fa fa-plus"></i>
-                              Tambah Absensi
-                            </a>
+                            <form action="tambah/" method="post" 
+                            class="ms-auto"
+                            data-bs-toggle="modal"
+                            data-bs-target="#addRowModal">
+                              {% csrf_token %}
+                              <input type="text" name="id_kelas" hidden value="{{id_kelas}}">
+                              <button type="submit" class="btn btn-primary">Tambah Absensi</button>
+                            </form>
                           </div>
                     </div>
                     <div class="card-body">
@@ -86,6 +87,8 @@
                               <th>Mata Pelajaran</th>
                               <th>Nama</th>
                               <th>Tanggal</th>
+                              <th>Mulai</th>
+                              <th>Batas</th>
                               <th>Deskripsi</th>
                               <th>Aksi</th>
                             </tr>
@@ -95,6 +98,8 @@
                               <th>Mata Pelajaran</th>
                               <th>Nama</th>
                               <th>Tanggal</th>
+                              <th>Mulai</th>
+                              <th>Batas</th>
                               <th>Deskripsi</th>
                               <th>Aksi</th>
                             </tr>
@@ -105,18 +110,26 @@
                                 <td>{{absensi_item.mapel}}</td>
                                 <td>{{absensi_item.nama}}</td>
                                 <td>{{absensi_item.tanggal}}</td>
+                                <td>{{absensi_item.mulai|time:"H:i"}}</td>
+                                <td>{{absensi_item.batas|time:"H:i"}}</td>
                                 <td>{{absensi_item.des}}</td>
                                 <td>
                                   <div class="form-button-action">
                                     <form action="edit/" method="post">
                                       {% csrf_token %}
                                       <input type="text" name="id_absensi" hidden value="{{absensi_item.id}}">
-                                      <button type="submit" class="btn btn-warning mx-2">Edit</button>
+                                      <button type="submit" class="btn btn-warning">Edit</button>
                                     </form>
-                                    <form action="hapus/" method="post">
+                                    <form id="hapusForm" action="hapus/" method="post">
                                       {% csrf_token %}
+                                      <input type="hidden" name="id_absensi" value="{{ absensi_item.id }}">
+                                      <button type="button" class="btn btn-danger mx-2" onclick="confirmDelete()">Hapus</button>
+                                  </form>
+                                    <form action="/guru/laporan/lihat/" method="post">
+                                      {% csrf_token %}
+                                      <input type="text" name="id_kelas" hidden value="{{id_kelas}}">
                                       <input type="text" name="id_absensi" hidden value="{{absensi_item.id}}">
-                                      <button type="submit" class="btn btn-danger">Hapus</button>
+                                      <button type="submit" class="btn btn-primary">Lihat</button>
                                     </form>
                                   </div>
                                 </td>
@@ -205,5 +218,23 @@
         });
       });
     </script>
+    <script>
+      function confirmDelete() {
+          Swal.fire({
+              title: "Apakah Anda yakin?",
+              text: "Data absensi ini akan dihapus secara permanen!",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#d33",
+              cancelButtonColor: "#3085d6",
+              confirmButtonText: "Ya, Hapus",
+              cancelButtonText: "Batal"
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  document.getElementById("hapusForm").submit(); // Submit form jika dikonfirmasi
+              }
+          });
+      }
+  </script>
   </body>
 </html>

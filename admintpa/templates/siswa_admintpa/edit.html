@@ -77,6 +77,11 @@
                         <div class="form-group">
                           <label>Username</label>
                           <input value="{{siswa.username}}" class="form-control" name="username"/>
+                          {% for message in messages %}
+                            {% if "duplicateUsername" in message.tags %}
+                              <small style="color: red;">{{message}}</small>
+                            {% endif %}
+                          {% endfor %}
                         </div>
                         <div class="form-group">
                           <label>Password</label>
@@ -132,21 +137,21 @@
                         <div class="d-flex justify-content-between">
                           <div class="col">
                             <div class="form-group">
-                              <label>File Foto 1</label>
+                              <label>Bagian Depan</label>
                               <img id="previewFoto1" src="{{ siswa.foto1.url }}" style="max-width: 100px; display: block; margin-bottom: 10px;" />
                               <input type="file" class="form-control-file" name="foto1" accept="image/*" value="" onchange="previewImage(this, 'previewFoto1')" />
                             </div>
                           </div>
                           <div class="col">
                             <div class="form-group">
-                              <label>File Foto 2</label>
+                              <label>Bagian Samping Kanan</label>
                               <img id="previewFoto2" src="{{ siswa.foto2.url }}" style="max-width: 100px; display: block; margin-bottom: 10px;" />
                               <input type="file" class="form-control-file" name="foto2" accept="image/*" onchange="previewImage(this, 'previewFoto2')" />
                             </div>
                           </div>
                           <div class="col">
                             <div class="form-group">
-                              <label>File Foto 3</label>
+                              <label>Bagian Samping kiri</label>
                               <img id="previewFoto3" src="{{ siswa.foto3.url }}" style="max-width: 100px; display: block; margin-bottom: 10px;" />
                               <input type="file" class="form-control-file" name="foto3" accept="image/*" onchange="previewImage(this, 'previewFoto3')" />
                             </div>    

@@ -5,6 +5,8 @@ import numpy as np
 from django.contrib import messages
 from django.conf import settings
 import os
+from django.utils.timezone import now
+from django.utils.timezone import localtime
 
 def index(request):
     id_user = request.session.get('id_user')
@@ -12,6 +14,7 @@ def index(request):
     query = """
         SELECT admintpa_kehadiran.id AS id,
                 admintpa_absensi.tanggal AS tanggal_absensi, 
+                admintpa_kehadiran.jam AS jam, 
                 admintpa_kelas.nama AS nama_kelas, 
                 admintpa_mapel.nama AS nama_mapel, 
                 admintpa_user.nama AS nama_user, 
@@ -31,9 +34,25 @@ def index(request):
 def absensi(request):
     id_user = request.session.get('id_user')
     agtkelas = Agtkelas.objects.get(id_user = id_user)
+
+    absensi_list = Absensi.objects.filter(id_kelas=agtkelas.id_kelas)
+
+    for absensi in absensi_list:
+        if now().time() > absensi.batas:
+            kehadiran, created = Kehadiran.objects.get_or_create(
+                id_absensi=absensi.id,
+                id_agtkelas=agtkelas.id,
+                defaults={"keterangan": "apla", "tanggal": now()},
+            )
+            if not created and kehadiran.keterangan is None:
+                kehadiran.keterangan = "apla"
+                kehadiran.save()
+
     query = """SELECT admintpa_absensi.id AS id, admintpa_mapel.nama as mapel,
             admintpa_absensi.nama, 
             admintpa_absensi.tanggal, 
+            admintpa_absensi.mulai, 
+            admintpa_absensi.batas, 
             admintpa_absensi.des, 
             admintpa_kehadiran.keterangan 
         FROM admintpa_absensi
@@ -66,6 +85,8 @@ def proses_submit(request):
                 id_absensi=id_absensi,
                 id_agtkelas=id_agtkelas,
                 keterangan=keterangan,
+                tanggal=now().date(),
+                jam=localtime().time(),
             )
             return redirect('/siswa/absensi/')
 
@@ -146,6 +167,8 @@ def proses_submit(request):
                 id_absensi=id_absensi,
                 id_agtkelas=id_agtkelas,
                 keterangan='hadir',
+                tanggal=now().date(),
+                jam=localtime().time(),
             )
 
         return redirect('/siswa/absensi/')

@@ -103,6 +103,7 @@
                         <thead class="thead-light">
                           <tr>
                             <th scope="col">Tanggal</th>
+                            <th scope="col">Jam</th>
                             <th scope="col" class="text-end">Pelajaran</th>
                             <th scope="col" class="text-end">Siswa</th>
                             <th scope="col" class="text-end">Keterangan</th>
@@ -113,6 +114,9 @@
                             <tr>
                               <th scope="row">  
                                 {{kehadiran_item.tanggal_absensi}}
+                              </th>
+                              <th scope="row">  
+                                {{kehadiran_item.jam|time:"H:i"}}
                               </th>
                               <td class="text-end">{{kehadiran_item.nama_mapel}}</td>
                               <td class="text-end">{{kehadiran_item.nama_user}}</td>

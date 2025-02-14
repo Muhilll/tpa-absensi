@@ -2,27 +2,30 @@ from django.shortcuts import render, redirect
 import os
 from django.conf import settings
 import shutil
+from django.utils.timezone import localtime
+from datetime import datetime
 from admintpa.models import Kelas, Agtkelas, User, Mapel, Absensi, Kehadiran
+
 
 # Create your views here.
 
 def index(request):
     id_user = request.session.get('id_user')
-    kelas = Kelas.objects.get(id_user = id_user)
-
-    jml_agtkelas = Agtkelas.objects.filter(id_kelas=kelas.id).count()
 
     query = """
-        SELECT admintpa_user.* 
-        FROM admintpa_user
-        INNER JOIN admintpa_agtkelas ON admintpa_user.id = admintpa_agtkelas.id_user
-        WHERE admintpa_agtkelas.id_kelas = %s LIMIT 10
+        SELECT COUNT(admintpa_agtkelas.id) as jml_agtkelas FROM admintpa_kelas 
+        INNER JOIN admintpa_agtkelas on admintpa_kelas.id = admintpa_agtkelas.id_kelas 
+        WHERE admintpa_kelas.id_user = %s
     """
-    user = User.objects.raw(query, [kelas.id])
+
+    jml_agtkelas = Agtkelas.objects.filter(id_kelas__in=Kelas.objects.filter(id_user=id_user)).count()
+
+    dtkelas = Kelas.objects.filter(id_user = id_user)
 
     query = """
         SELECT admintpa_kehadiran.id AS id,
                 admintpa_absensi.tanggal AS tanggal_absensi, 
+                admintpa_kehadiran.jam, 
                 admintpa_kelas.nama AS nama_kelas, 
                 admintpa_mapel.nama AS nama_mapel, 
                 admintpa_user.nama AS nama_user, 
@@ -32,57 +35,69 @@ def index(request):
             INNER JOIN admintpa_mapel ON admintpa_absensi.id_mapel = admintpa_mapel.id
             INNER JOIN admintpa_kehadiran ON admintpa_absensi.id = admintpa_kehadiran.id_absensi
             INNER JOIN admintpa_agtkelas ON admintpa_kehadiran.id_agtkelas = admintpa_agtkelas.id
-            INNER JOIN admintpa_user ON admintpa_agtkelas.id_user = admintpa_user.id where admintpa_kelas.id = %s
+            INNER JOIN admintpa_user ON admintpa_agtkelas.id_user = admintpa_user.id where admintpa_kelas.id_user = %s
             ORDER BY admintpa_absensi.tanggal DESC
             LIMIT 10
     """
-    kehadiran = Kehadiran.objects.raw(query, [kelas.id])
+    kehadiran = Kehadiran.objects.raw(query, [id_user])
 
     return render(request, 'home_guru/index.html', {
         'jml_agtkelas': jml_agtkelas,
-        'user': user,
+        'dtkelas': dtkelas,
         'kehadiran': kehadiran,
     })
 
+def kelas(request):
+    id_user = request.session.get('id_user')
+    kelas = Kelas.objects.filter(id_user = id_user)
+    return render(request,'siswa_guru/kelas.html', {'kelas': kelas})
+
 def siswa(request):
     id_user = request.session.get('id_user')
-    kelas = Kelas.objects.get(id_user = id_user)
+    id_kelas = request.POST['id_kelas']
     query = """
         SELECT admintpa_user.* 
         FROM admintpa_user
         INNER JOIN admintpa_agtkelas ON admintpa_user.id = admintpa_agtkelas.id_user
         WHERE admintpa_agtkelas.id_kelas = %s
     """
-    agtkelas = User.objects.raw(query, [kelas.id])  
+    agtkelas = User.objects.raw(query, [id_kelas])  
     return render(request, 'siswa_guru/index.html', {'agtkelas': agtkelas})
 
-def absensi(request):
+def kelasAbsensi(request):
     id_user = request.session.get('id_user')
-    kelas = Kelas.objects.get(id_user=id_user)
+    kelas = Kelas.objects.filter(id_user = id_user)
+    return render(request,'absensi_guru/kelas.html', {'kelas': kelas})
+
+def absensi(request):
+    id_kelas = request.GET['id_kelas']
     query = """SELECT admintpa_absensi.id as id, admintpa_mapel.nama as mapel, 
-        admintpa_absensi.nama, admintpa_absensi.tanggal, 
+        admintpa_absensi.nama, admintpa_absensi.tanggal, admintpa_absensi.mulai, admintpa_absensi.batas, 
         admintpa_absensi.des FROM admintpa_absensi INNER JOIN admintpa_mapel on admintpa_absensi.id_mapel = admintpa_mapel.id 
         WHERE admintpa_absensi.id_kelas = %s
     """
-    absensi = Absensi.objects.raw(query, [kelas.id])
-    return render(request, 'absensi_guru/index.html', {'absensi': absensi})
+    absensi = Absensi.objects.raw(query, [id_kelas])
+    return render(request, 'absensi_guru/index.html', {'absensi': absensi, 'id_kelas': id_kelas})
 
 def tambah_absensi(request):
-    id_user = request.session.get('id_user')
-    kelas = Kelas.objects.get(id_user=id_user)
+    id_kelas = request.POST['id_kelas']
     mapel = Mapel.objects.all()
 
+    return render(request, 'absensi_guru/tambah.html', {'mapel': mapel, 'id_kelas': id_kelas})
+
+def proses_tambahAbsensi(request):
     if request.method == 'POST':
         Absensi.objects.create(
-            id_kelas=kelas.id,
+            id_kelas=request.POST['id_kelas'],
             id_mapel=request.POST['id_mapel'],
             nama=request.POST['nama'],
-            tanggal=request.POST['tanggal'],
+            tanggal=datetime.strptime(request.POST['tanggal'], "%Y-%m-%d").date(),
+            mulai=localtime().time(),
+            batas=request.POST['batas'],
             des=request.POST['des'],
         )
-        return redirect('/guru/absensi')
-    
-    return render(request, 'absensi_guru/tambah.html', {'mapel': mapel})
+        return redirect('/guru/absensi/')
+
 
 def edit_absensi(request):
     id_absensi = request.POST['id_absensi']
@@ -98,10 +113,7 @@ def edit_absensi(request):
     return render(request, 'absensi_guru/edit.html', {'absensi': absensi[0], 'mapel': mapel})
 
 def proses_edit_absensi(request):
-    id_user = request.session.get('id_user')
-    kelas = Kelas.objects.get(id_user=id_user)
     absensi = Absensi.objects.get(id = request.POST['id_absensi'])
-    absensi.id_kelas = kelas.id
     absensi.id_mapel = request.POST['id_mapel']
     absensi.nama = request.POST['nama']
     absensi.tanggal = request.POST['tanggal']
@@ -116,25 +128,13 @@ def hapus_absensi(request):
 
     return redirect('/guru/absensi')
 
-def laporan(request):
-    id_user = request.session.get('id_user')
-    kelas = Kelas.objects.get(id_user=id_user)
-    query = """SELECT admintpa_absensi.id as id, admintpa_mapel.nama as mapel, 
-        admintpa_absensi.nama, admintpa_absensi.tanggal, 
-        admintpa_absensi.des FROM admintpa_absensi INNER JOIN admintpa_mapel on admintpa_absensi.id_mapel = admintpa_mapel.id 
-        WHERE admintpa_absensi.id_kelas = %s
-    """
-    absensi = Absensi.objects.raw(query, [kelas.id])
-    return render(request, 'laporan_guru/index.html', {'absensi': absensi})
-
 def lihat_laporan(request):
     id_absensi = request.POST['id_absensi']
-    id_user = request.session.get('id_user')
-    kelas = Kelas.objects.get(id_user=id_user)
     
     query = """
     SELECT admintpa_kehadiran.id AS id,
            admintpa_absensi.tanggal AS tanggal_absensi, 
+           admintpa_kehadiran.jam, 
            admintpa_kelas.nama AS nama_kelas, 
            admintpa_mapel.nama AS nama_mapel, 
            admintpa_user.nama AS nama_user, 
@@ -149,8 +149,8 @@ def lihat_laporan(request):
     """
     
     kehadiran = Kehadiran.objects.raw(query, [id_absensi])
-    dtkelas = Kelas.objects.get(id=kelas.id)
-    return render(request, 'laporan_guru/lihat.html', {'kehadiran': kehadiran, 'kelas': dtkelas})
+    dtkelas = Kelas.objects.get(id=request.POST['id_kelas'])
+    return render(request, 'absensi_guru/lihat.html', {'kehadiran': kehadiran, 'kelas': dtkelas})
 
 def profile(request):
     id_user = request.session.get('id_user')

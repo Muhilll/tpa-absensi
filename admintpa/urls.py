@@ -19,6 +19,7 @@ urlpatterns = [
     path('kelas/tambah/', views.tambah_kelas, name='tambah_kelas'),
     path('kelas/detail/', views.detail_kelas, name='detail_kelas'),
     path('kelas/detail/tambah-agtkelas/', views.tambah_agtkelas, name='tambah-agtkelas'),
+    path('kelas/detail/tambah-agtkelas/proses/', views.proses_tambah_agtkelas, name='proses_tambah_agtkelas'),
     path('kelas/detail/hapus-agtkelas/', views.hapus_agtkelas, name='hapus-agtkelas'),
     path('kelas/edit/', views.edit_kelas, name='edit_kelas'),
     path('kelas/edit/proses/', views.proses_edit_kelas, name='proses_edit_kelas'),

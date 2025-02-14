@@ -76,6 +76,7 @@
                           <thead>
                             <tr>
                               <th>Tanggal</th>
+                              <th>Jam</th>
                               <th>Kelas</th>
                               <th>Pelajaran</th>
                               <th>Siswa</th>
@@ -85,6 +86,7 @@
                           <tfoot>
                             <tr>
                               <th>Tanggal</th>
+                              <th>Jam</th>
                               <th>Kelas</th>
                               <th>Pelajaran</th>
                               <th>Siswa</th>
@@ -95,6 +97,7 @@
                             {% for kehadiran_item in kehadiran %}
                               <tr>
                                 <td>{{kehadiran_item.tanggal_absensi}}</td>
+                                <td>{{kehadiran_item.jam|time:"H:i"}}</td>
                                 <td>{{kehadiran_item.nama_kelas}}</td>
                                 <td>{{kehadiran_item.nama_mapel}}</td>
                                 <td>{{kehadiran_item.nama_user}}</td>

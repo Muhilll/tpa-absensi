@@ -56,25 +56,43 @@
         <form method="post" action="{% url 'logreg:proses_login' %}">
           {% csrf_token %}
           <div class="card-body">
-            <div class="form-group">
-              <input class="form-control" name="username" required placeholder="Username" />
-            </div>
-            <div class="form-group">
-              <input type="password" class="form-control" name="password" placeholder="Password" />
-            </div>
-            <div class="form-group">
-              <label for="role">Level</label>
-              <select class="form-select" id="role" name="role">
-                <option value="siswa">Siswa</option>
-                <option value="guru">Guru</option>
-                <option value="admin">Administrator</option>
-              </select>
-            </div>
+              <div class="form-group">
+                  <input class="form-control" name="username" required placeholder="Username"
+                      value="{{ request.POST.username }}">
+                      {% for message in messages %}
+                        {% if "username" in message.tags %}
+                          <small style="color: red;">{{message}}</small>
+                        {% endif %}
+                      {% endfor %}
+              </div>
+              <div class="form-group">
+                  <input type="password" class="form-control" name="password" placeholder="Password">
+                  {% for message in messages %}
+                    {% if "password" in message.tags %}
+                      <small style="color: red;">{{message}}</small>
+                    {% endif %}
+                  {% endfor %}
+              </div>
+              <div class="form-group">
+                  <label for="role">Level</label>
+                  <select class="form-select" id="role" name="role">
+                      <option value="siswa" {% if request.POST.role == "siswa" %}selected{% endif %}>Siswa</option>
+                      <option value="guru" {% if request.POST.role == "guru" %}selected{% endif %}>Guru</option>
+                      <option value="admin" {% if request.POST.role == "admin" %}selected{% endif %}>Administrator</option>
+                  </select>
+              </div>
+              <div class="form-group">
+                  {% for message in messages %}
+                    {% if "kelasnotfound" in message.tags %}
+                      <small style="color: red;">{{message}}</small>
+                    {% endif %}
+                  {% endfor %}
+              </div>
           </div>
           <div class="card-action text-center">
-            <button class="btn btn-success w-100" type="submit">Submit</button>
+              <button class="btn btn-success w-100" type="submit">Submit</button>
           </div>
-        </form>
+      </form>      
       </div>
     </div>
   </body>

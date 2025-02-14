@@ -1,5 +1,6 @@
 {% load static %}
 <div class="main-header">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <div class="main-header-logo">
       <!-- Logo Header -->
       <div class="logo-header" data-background-color="dark">
@@ -55,10 +56,31 @@
             </ul>
           </li>
           <li class="nav-item topbar-user dropdown hidden-caret">
-              <span class="profile-username">
-                <a href="/auth/logout" class="btn btn-primary">Logout</a>
-              </span>
+            <span class="profile-username">
+              <button id="logout-btn" class="btn btn-primary">Logout</button>
+            </span>
           </li>
+
+          <script>
+            document.getElementById("logout-btn").addEventListener("click", function (event) {
+              event.preventDefault(); // Mencegah logout langsung
+          
+              Swal.fire({
+                title: "Yakin ingin logout?",
+                text: "Anda akan keluar dari sesi ini!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Ya, Logout!",
+                cancelButtonText: "Batal"
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  window.location.href = "/auth/logout"; // Redirect jika dikonfirmasi
+                }
+              });
+            });
+          </script>
         </ul>
       </div>
     </nav>

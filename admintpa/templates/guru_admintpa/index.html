@@ -33,6 +33,7 @@
         },
       });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- CSS Files -->
     <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}" />
@@ -126,12 +127,12 @@
                                     {% csrf_token %}
                                     <input type="text" name="id_guru" hidden value="{{guru_item.id}}">
                                     <button type="submit" class="btn btn-warning mx-2">Edit</button>
-                                  </form>
-                                  <form action="hapus/" method="post">
-                                    {% csrf_token %}
-                                    <input type="text" name="id_guru" hidden value="{{guru_item.id}}">
-                                    <button type="submit" class="btn btn-danger">Hapus</button>
-                                  </form>
+                                  </form>      
+                                <form id="deleteForm-{{guru_item.id}}" action="hapus/" method="post">
+                                  {% csrf_token %}
+                                  <input type="text" name="id_guru" hidden value="{{guru_item.id}}">
+                                  <button type="button" class="btn btn-danger" onclick="confirmDelete('{{guru_item.id}}')">Hapus</button>
+                                </form>
                                 </div>
                               </td>
                             </tr>
@@ -218,6 +219,24 @@
           $("#addRowModal").modal("hide");
         });
       });
+    </script>
+      <script>
+        function confirmDelete(id) {
+            Swal.fire({
+                title: "Apakah Anda yakin?",
+                text: "Data ini akan dihapus secara permanen!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                cancelButtonColor: "#3085d6",
+                confirmButtonText: "Ya, hapus!",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById("deleteForm-" + id).submit();
+                }
+            });
+        }
     </script>
   </body>
 </html>

@@ -33,6 +33,7 @@
         },
       });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- CSS Files -->
     <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}" />
@@ -77,10 +78,7 @@
                     </div>
                     <div class="card-body">
                       <div class="table-responsive">
-                        <table
-                          id="basic-datatables"
-                          class="display table table-striped table-hover"
-                        >
+                        <table id="basic-datatables" class="display table table-striped table-hover">
                           <thead>
                             <tr>
                               <th>Nama</th>
@@ -110,13 +108,13 @@
                           <tbody>
                             {% for siswa_item in siswa %}
                               <tr>
-                                <td>{{siswa_item.nama}}</td>
-                                <td>{{siswa_item.tmpt_lahir}}</td>
-                                <td>{{siswa_item.tgl_lahir}}</td>
-                                <td>{{siswa_item.jkl}}</td>
-                                <td>{{siswa_item.agama}}</td>
-                                <td>{{siswa_item.alamat}}</td>
-                                <td>{{siswa_item.notelp}}</td>
+                                <td>{{ siswa_item.nama }}</td>
+                                <td>{{ siswa_item.tmpt_lahir }}</td>
+                                <td>{{ siswa_item.tgl_lahir }}</td>
+                                <td>{{ siswa_item.jkl }}</td>
+                                <td>{{ siswa_item.agama }}</td>
+                                <td>{{ siswa_item.alamat }}</td>
+                                <td>{{ siswa_item.notelp }}</td>
                                 <td>
                                   <img style="max-width: 100px; height: auto;" src="{{ siswa_item.foto1.url }}" alt="Foto" />
                                 </td>
@@ -124,13 +122,14 @@
                                   <div class="form-button-action">
                                     <form action="edit/" method="post">
                                       {% csrf_token %}
-                                      <input type="text" name="id_siswa" hidden value="{{siswa_item.id}}">
+                                      <input type="text" name="id_siswa" hidden value="{{ siswa_item.id }}">
                                       <button type="submit" class="btn btn-warning mx-2">Edit</button>
                                     </form>
-                                    <form action="hapus/" method="post">
+                    
+                                    <form class="hapus-form" action="hapus/" method="post">
                                       {% csrf_token %}
-                                      <input type="text" name="id_siswa" hidden value="{{siswa_item.id}}">
-                                      <button type="submit" class="btn btn-danger">Hapus</button>
+                                      <input type="hidden" name="id_siswa" value="{{ siswa_item.id }}">
+                                      <button type="button" class="btn btn-danger hapus-btn">Hapus</button>
                                     </form>
                                   </div>
                                 </td>
@@ -216,6 +215,31 @@
               action,
             ]);
           $("#addRowModal").modal("hide");
+        });
+      });
+    </script>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".hapus-btn").forEach(function (button) {
+          button.addEventListener("click", function () {
+            let form = this.closest(".hapus-form");
+
+            Swal.fire({
+              title: "Apakah Anda yakin?",
+              text: "Data ini akan dihapus secara permanen!",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#d33",
+              cancelButtonColor: "#3085d6",
+              confirmButtonText: "Ya, Hapus!",
+              cancelButtonText: "Batal"
+            }).then((result) => {
+              if (result.isConfirmed) {
+                form.submit(); // Mengirimkan form jika dikonfirmasi
+              }
+            });
+          });
         });
       });
     </script>

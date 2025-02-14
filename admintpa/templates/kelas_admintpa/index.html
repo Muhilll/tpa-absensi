@@ -33,6 +33,7 @@
         },
       });
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- CSS Files -->
     <link rel="stylesheet" href="{% static "css/bootstrap.min.css" %}" />
@@ -83,7 +84,7 @@
                         >
                           <thead>
                             <tr>
-                              <th>Nama</th>
+                              <th>Nama Kelas</th>
                               <th>Deskripsi</th>
                               <th>Guru</th>
                               <th>Aksi</th>
@@ -91,7 +92,7 @@
                           </thead>
                           <tfoot>
                             <tr>
-                                <th>Nama</th>
+                                <th>Nama Kelas</th>
                                 <th>Deskripsi</th>
                                 <th>Guru</th>
                                 <th>Aksi</th>
@@ -105,7 +106,7 @@
                               <td>{{kelas_item.guru}}</td>
                               <td>
                                 <div class="form-button-action">
-                                  <form action="detail/" method="post">
+                                  <form action="detail/" method="get">
                                     {% csrf_token %}
                                     <input type="text" name="id_kelas" hidden value="{{kelas_item.id}}">
                                     <button type="submit" class="btn btn-primary mx-2">Lihat Siswa</button>
@@ -115,11 +116,11 @@
                                     <input type="text" name="id_kelas" hidden value="{{kelas_item.id}}">
                                     <button type="submit" class="btn btn-warning mx-2">Edit</button>
                                   </form>
-                                  <form action="hapus/" method="post">
+                                  <form id="deleteForm-{{kelas_item.id}}" action="hapus/" method="post">
                                     {% csrf_token %}
                                     <input type="text" name="id_kelas" hidden value="{{kelas_item.id}}">
-                                    <button type="submit" class="btn btn-danger">Hapus</button>
-                                  </form>
+                                    <button type="button" class="btn btn-danger" onclick="confirmDelete('{{kelas_item.id}}')">Hapus</button>
+                                </form>
                                 </div>
                               </td>
                             </tr>
@@ -207,6 +208,24 @@
         });
       });
     </script>
+    <script>
+      function confirmDelete(id) {
+          Swal.fire({
+              title: "Apakah Anda yakin?",
+              text: "Data kelas ini akan dihapus secara permanen!",
+              icon: "warning",
+              showCancelButton: true,
+              confirmButtonColor: "#d33",
+              cancelButtonColor: "#3085d6",
+              confirmButtonText: "Ya, hapus!",
+              cancelButtonText: "Batal"
+          }).then((result) => {
+              if (result.isConfirmed) {
+                  document.getElementById("deleteForm-" + id).submit();
+              }
+          });
+      }
+  </script>
   </body>
 </html>
 
