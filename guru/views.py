@@ -3,8 +3,13 @@ import os
 from django.conf import settings
 import shutil
 from django.utils.timezone import localtime
-from datetime import datetime
 from admintpa.models import Kelas, Agtkelas, User, Mapel, Absensi, Kehadiran
+from django.urls import reverse
+from django.http import HttpResponse
+from django.template.loader import get_template
+import datetime
+from xhtml2pdf import pisa
+from io import BytesIO
 
 
 # Create your views here.
@@ -150,7 +155,70 @@ def lihat_laporan(request):
     
     kehadiran = Kehadiran.objects.raw(query, [id_absensi])
     dtkelas = Kelas.objects.get(id=request.POST['id_kelas'])
-    return render(request, 'absensi_guru/lihat.html', {'kehadiran': kehadiran, 'kelas': dtkelas})
+    return render(request, 'absensi_guru/lihat.html', {'id_absensi': id_absensi, 'kehadiran': kehadiran, 'kelas': dtkelas})
+
+def cetak_laporan(request):
+    if request.method == "POST":
+        id_absensi = request.POST['id_absensi']
+        absensi = Absensi.objects.get(id=id_absensi)
+        waktu = request.POST.get('waktu')
+        
+        # Query database (sama seperti sebelumnya)
+        query = """
+        SELECT admintpa_kehadiran.id AS id,
+                admintpa_absensi.tanggal AS tanggal_absensi, 
+                admintpa_kehadiran.jam, 
+                admintpa_kelas.nama AS nama_kelas, 
+                admintpa_mapel.nama AS nama_mapel, 
+                admintpa_user.nama AS nama_user, 
+                admintpa_kehadiran.keterangan AS keterangan_kehadiran
+        FROM admintpa_absensi
+        INNER JOIN admintpa_kelas ON admintpa_absensi.id_kelas = admintpa_kelas.id
+        INNER JOIN admintpa_mapel ON admintpa_absensi.id_mapel = admintpa_mapel.id
+        INNER JOIN admintpa_kehadiran ON admintpa_absensi.id = admintpa_kehadiran.id_absensi
+        INNER JOIN admintpa_agtkelas ON admintpa_kehadiran.id_agtkelas = admintpa_agtkelas.id
+        INNER JOIN admintpa_user ON admintpa_agtkelas.id_user = admintpa_user.id
+        WHERE admintpa_absensi.id = %s
+        """
+        
+        # Filter waktu (sama seperti sebelumnya)
+        today = datetime.date.today()
+        if waktu == "harian":
+            query += " AND admintpa_absensi.tanggal = %s"
+            params = [id_absensi, today]
+        elif waktu == "mingguan":
+            start_week = today - datetime.timedelta(days=today.weekday())
+            query += " AND admintpa_absensi.tanggal BETWEEN %s AND %s"
+            params = [id_absensi, start_week, today]
+        elif waktu == "bulanan":
+            start_month = today.replace(day=1)
+            query += " AND admintpa_absensi.tanggal BETWEEN %s AND %s"
+            params = [id_absensi, start_month, today]
+        elif waktu == "tahunan":
+            start_year = today.replace(month=1, day=1)
+            query += " AND admintpa_absensi.tanggal BETWEEN %s AND %s"
+            params = [id_absensi, start_year, today]
+        else:
+            params = [id_absensi]
+            
+        kehadiran = Kehadiran.objects.raw(query, params)
+        kelas = Kelas.objects.get(id=absensi.id_kelas)
+        
+        # Render template HTML
+        template = get_template('absensi_guru/laporan_pdf.html')
+        html = template.render({'kehadiran': kehadiran, 'kelas': kelas})
+        
+        # Buat file PDF
+        result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+        
+        if not pdf.err:
+            response = HttpResponse(result.getvalue(), content_type='application/pdf')
+            response['Content-Disposition'] = 'inline; filename="laporan_absensi.pdf"'
+            return response
+        else:
+            return HttpResponse("Error generating PDF", status=400)
+
 
 def profile(request):
     id_user = request.session.get('id_user')

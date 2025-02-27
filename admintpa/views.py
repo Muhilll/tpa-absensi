@@ -5,6 +5,11 @@ import shutil
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
 from django.urls import reverse
+from django.http import HttpResponse
+from django.template.loader import get_template
+import datetime
+from xhtml2pdf import pisa
+from io import BytesIO
 
 # Create your views here.
 from django.shortcuts import render, redirect
@@ -95,7 +100,9 @@ def edit_siswa(request):
 def proses_edit_siswa(request):
     siswa = User.objects.get(role = 'siswa', id = request.POST['id_siswa'])
     siswa.username = request.POST['username']
-    siswa.password = make_password(request.POST.get('password', siswa.password))
+    password = request.POST.get('password', None)
+    if password:  # Hanya hash password jika ada input baru
+        siswa.password = make_password(password)
     siswa.nama = request.POST['nama']
     siswa.tmpt_lahir = request.POST['tmpt_lahir']
     siswa.tgl_lahir = request.POST['tgl_lahir']
@@ -184,7 +191,9 @@ def edit_guru(request):
 def proses_edit_guru(request):
     guru = User.objects.get(role = 'guru', id = request.POST['id_guru'])
     guru.username = request.POST['username']
-    guru.password = make_password(request.POST.get('password', guru.password))
+    password = request.POST.get('password', None)
+    if password:  # Hanya hash password jika ada input baru
+        siswa.password = make_password(password)
     guru.nama = request.POST['nama']
     guru.tmpt_lahir = request.POST['tmpt_lahir']
     guru.tgl_lahir = request.POST['tgl_lahir']
@@ -377,6 +386,67 @@ def laporan_kelas(request):
     kelas = Kelas.objects.get(id=id_kelas)
 
     return render(request, 'laporan_admintpa/detail.html', {'kehadiran': kehadiran, 'kelas': kelas})
+
+def cetak_laporan(request):
+    if request.method == "POST":
+        id_kelas = request.POST.get('id_kelas')
+        waktu = request.POST.get('waktu')
+        
+        # Query database (sama seperti sebelumnya)
+        query = """
+        SELECT admintpa_kehadiran.id AS id,
+               admintpa_absensi.tanggal AS tanggal_absensi,
+               admintpa_kehadiran.jam,
+               admintpa_kelas.nama AS nama_kelas,
+               admintpa_mapel.nama AS nama_mapel,
+               admintpa_user.nama AS nama_user,
+               admintpa_kehadiran.keterangan AS keterangan_kehadiran
+        FROM admintpa_absensi
+        INNER JOIN admintpa_kelas ON admintpa_absensi.id_kelas = admintpa_kelas.id
+        INNER JOIN admintpa_mapel ON admintpa_absensi.id_mapel = admintpa_mapel.id
+        INNER JOIN admintpa_kehadiran ON admintpa_absensi.id = admintpa_kehadiran.id_absensi
+        INNER JOIN admintpa_agtkelas ON admintpa_kehadiran.id_agtkelas = admintpa_agtkelas.id
+        INNER JOIN admintpa_user ON admintpa_agtkelas.id_user = admintpa_user.id
+        WHERE admintpa_kelas.id = %s
+        """
+        
+        # Filter waktu (sama seperti sebelumnya)
+        today = datetime.date.today()
+        if waktu == "harian":
+            query += " AND admintpa_absensi.tanggal = %s"
+            params = [id_kelas, today]
+        elif waktu == "mingguan":
+            start_week = today - datetime.timedelta(days=today.weekday())
+            query += " AND admintpa_absensi.tanggal BETWEEN %s AND %s"
+            params = [id_kelas, start_week, today]
+        elif waktu == "bulanan":
+            start_month = today.replace(day=1)
+            query += " AND admintpa_absensi.tanggal BETWEEN %s AND %s"
+            params = [id_kelas, start_month, today]
+        elif waktu == "tahunan":
+            start_year = today.replace(month=1, day=1)
+            query += " AND admintpa_absensi.tanggal BETWEEN %s AND %s"
+            params = [id_kelas, start_year, today]
+        else:
+            params = [id_kelas]
+            
+        kehadiran = Kehadiran.objects.raw(query, params)
+        kelas = Kelas.objects.get(id=id_kelas)
+        
+        # Render template HTML
+        template = get_template('laporan_admintpa/laporan_pdf.html')
+        html = template.render({'kehadiran': kehadiran, 'kelas': kelas})
+        
+        # Buat file PDF
+        result = BytesIO()
+        pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+        
+        if not pdf.err:
+            response = HttpResponse(result.getvalue(), content_type='application/pdf')
+            response['Content-Disposition'] = 'inline; filename="laporan_absensi.pdf"'
+            return response
+        else:
+            return HttpResponse("Error generating PDF", status=400)
 
 # def laporan_kelas(request):
 

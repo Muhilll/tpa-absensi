@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Laporan Absensi Kelas {{ kelas.nama }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 14px; }
+        h2 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid black; padding: 8px; text-align: center; }
+        th { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h2>Laporan Absensi Kelas {{ kelas.nama }}</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Tanggal</th>
+                <th>Jam</th>
+                <th>Kelas</th>
+                <th>Pelajaran</th>
+                <th>Siswa</th>
+                <th>Keterangan</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for kehadiran_item in kehadiran %}
+                <tr>
+                    <td>{{ kehadiran_item.tanggal_absensi }}</td>
+                    <td>{{ kehadiran_item.jam|time:"H:i" }}</td>
+                    <td>{{ kehadiran_item.nama_kelas }}</td>
+                    <td>{{ kehadiran_item.nama_mapel }}</td>
+                    <td>{{ kehadiran_item.nama_user }}</td>
+                    <td>{{ kehadiran_item.keterangan_kehadiran }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

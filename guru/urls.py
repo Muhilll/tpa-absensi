@@ -15,6 +15,7 @@ urlpatterns = [
     path('absensi/kelas/edit/proses/', views.proses_edit_absensi, name='proses_edit_absensi'),
     path('absensi/kelas/hapus/', views.hapus_absensi, name='hapus_absensi'),
     path('laporan/lihat/', views.lihat_laporan, name='lihat_laporan'),
+    path('laporan/cetak/', views.cetak_laporan, name='cetak_laporan'),
     path('profile/', views.profile, name='profile'),
     path('profile/edit/', views.editprofile, name='edit_profile'),
 ]

@@ -7,6 +7,10 @@ from django.conf import settings
 import os
 from django.utils.timezone import now
 from django.utils.timezone import localtime
+from django.http import HttpResponse
+import face_recognition
+from ultralytics import YOLO
+
 
 def index(request):
     id_user = request.session.get('id_user')
@@ -38,7 +42,10 @@ def absensi(request):
     absensi_list = Absensi.objects.filter(id_kelas=agtkelas.id_kelas)
 
     for absensi in absensi_list:
-        if now().time() > absensi.batas:
+        batas_waktu = absensi.batas
+        waktu_sekarang = localtime().time()
+
+        if batas_waktu and waktu_sekarang > batas_waktu:
             kehadiran, created = Kehadiran.objects.get_or_create(
                 id_absensi=absensi.id,
                 id_agtkelas=agtkelas.id,
@@ -65,7 +72,6 @@ def absensi(request):
 
     return render(request, 'absensi_siswa/index.html', {'absensi': absensi})
 
-model = cv2.dnn.readNetFromONNX("siswa/yolov11n-face.onnx")
 
 def submit(request):
     id_absensi = request.POST['id_absensi']
@@ -98,33 +104,14 @@ def proses_submit(request):
         if not agtkelas:
             return redirect('/siswa/absensi/')
 
-        user_image_path = "media/" + agtkelas[0].foto1
-        user_id = agtkelas[0].id
-        user_name = agtkelas[0].nama
+        model = YOLO("siswa/best.pt")
 
-        # Load foto wajah pengguna
-        face_recognizer = cv2.face.LBPHFaceRecognizer_create()
-        image = cv2.imread(user_image_path, cv2.IMREAD_GRAYSCALE)
+        # Load gambar wajah yang sudah dikenal
+        known_image = face_recognition.load_image_file("media/" + agtkelas[0].foto1)
+        known_encoding = face_recognition.face_encodings(known_image)[0]
 
-        if image is None:
-            return redirect('/siswa/absensi/')
-
-        faces = []
-        labels = []
-
-        # Deteksi wajah di gambar
-        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
-        detected_faces = face_cascade.detectMultiScale(image, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
-
-        for (x, y, w, h) in detected_faces:
-            faces.append(image[y:y+h, x:x+w])
-            labels.append(user_id)
-
-        if len(faces) == 0:
-            return redirect('/siswa/absensi/')
-
-        # Training model dengan satu wajah pengguna
-        face_recognizer.train(faces, np.array(labels))
+        known_faces = [known_encoding]
+        face_names = [agtkelas[0].nama]
 
         video_capture = cv2.VideoCapture(0)
         terdeteksi = False
@@ -134,27 +121,42 @@ def proses_submit(request):
             if not ret:
                 break
 
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            detected_faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30))
+            # Resize frame untuk optimalisasi deteksi
+            frame_small = cv2.resize(frame, (640, 480))
+            
+            # Deteksi wajah menggunakan YOLO
+            results = model(frame_small)
+            detections = results[0].boxes.xyxy.cpu().numpy()
 
-            for (x, y, w, h) in detected_faces:
-                face_roi = gray[y:y+h, x:x+w]
+            for x1, y1, x2, y2 in detections:
+                margin = 20  # Tambahkan margin
+                x1 = max(0, int(x1 - margin))
+                y1 = max(0, int(y1 - margin))
+                x2 = min(frame.shape[1], int(x2 + margin))
+                y2 = min(frame.shape[0], int(y2 + margin))
 
-                # Prediksi wajah
-                label, confidence = face_recognizer.predict(face_roi)
+                face_crop = frame[y1:y2, x1:x2]
+                if face_crop.size == 0 or face_crop.shape[0] < 20 or face_crop.shape[1] < 20:
+                    continue
 
-                if label == user_id and confidence < 50:  # Confidence threshold
-                    terdeteksi = True
-                    color = (0, 255, 0)
-                    text = f"{user_name} ({confidence:.2f})"
-                else:
-                    color = (0, 0, 255)
-                    text = "Unknown"
+                rgb_face = cv2.cvtColor(face_crop, cv2.COLOR_BGR2RGB)
+                face_encodings = face_recognition.face_encodings(rgb_face)
 
-                cv2.rectangle(frame, (x, y), (x+w, y+h), color, 2)
-                cv2.putText(frame, text, (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+                name = "Unknown"
+                color = (0, 0, 255)
 
-            cv2.imshow("Face Recognition OpenCV LBPH", frame)
+                if face_encodings:
+                    match = face_recognition.compare_faces(known_faces, face_encodings[0], tolerance=0.5)
+                    if True in match:
+                        index = match.index(True)
+                        name = face_names[index]
+                        color = (0, 255, 0)
+                        terdeteksi = True
+
+                cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+                cv2.putText(frame, name, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+
+            cv2.imshow("Optimized YOLO + Face Recognition", frame)
 
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
@@ -211,6 +213,82 @@ def editprofile(request):
     else:
         return render(request, 'profile_siswa/edit.html', {'user': user})
     
+
+def tes_kamera(request):
+
+    return render(request, 'test_siswa/index.html')
+
+def proses_tes_kamera(request):
+    id_user = request.session.get('id_user')
+    agtkelas = Agtkelas.objects.get(id_user = id_user)
+
+    # Load foto user dari database
+    query = """SELECT admintpa_user.id as id, admintpa_user.nama, admintpa_user.foto1 FROM admintpa_user 
+    INNER JOIN admintpa_agtkelas on admintpa_user.id = admintpa_agtkelas.id_user WHERE admintpa_agtkelas.id = %s"""
+    agtkelas = Agtkelas.objects.raw(query, [agtkelas.id])
+
+    if not agtkelas:
+        return redirect('/siswa/absensi/')
+
+    model = YOLO("siswa/best.pt")
+
+    # Load gambar wajah yang sudah dikenal
+    known_image = face_recognition.load_image_file("media/" + agtkelas[0].foto1)
+    known_encoding = face_recognition.face_encodings(known_image)[0]
+
+    known_faces = [known_encoding]
+    face_names = [agtkelas[0].nama]
+
+    video_capture = cv2.VideoCapture(0)
+
+    while True:
+        ret, frame = video_capture.read()
+        if not ret:
+            break
+
+        # Resize frame untuk optimalisasi deteksi
+        frame_small = cv2.resize(frame, (640, 480))
+        
+        # Deteksi wajah menggunakan YOLO
+        results = model(frame_small)
+        detections = results[0].boxes.xyxy.cpu().numpy()
+
+        for x1, y1, x2, y2 in detections:
+            margin = 20  # Tambahkan margin
+            x1 = max(0, int(x1 - margin))
+            y1 = max(0, int(y1 - margin))
+            x2 = min(frame.shape[1], int(x2 + margin))
+            y2 = min(frame.shape[0], int(y2 + margin))
+
+            face_crop = frame[y1:y2, x1:x2]
+            if face_crop.size == 0 or face_crop.shape[0] < 20 or face_crop.shape[1] < 20:
+                continue
+
+            rgb_face = cv2.cvtColor(face_crop, cv2.COLOR_BGR2RGB)
+            face_encodings = face_recognition.face_encodings(rgb_face)
+
+            name = "Unknown"
+            color = (0, 0, 255)
+
+            if face_encodings:
+                match = face_recognition.compare_faces(known_faces, face_encodings[0], tolerance=0.5)
+                if True in match:
+                    index = match.index(True)
+                    name = face_names[index]
+                    color = (0, 255, 0)
+
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+            cv2.putText(frame, name, (x1, y1 - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, color, 2)
+
+        cv2.imshow("Optimized YOLO + Face Recognition", frame)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    video_capture.release()
+    cv2.destroyAllWindows()
+    
+    return redirect('/siswa/tes-kamera/')
 
 def logout(request):
     if request.method == 'POST':

@@ -63,8 +63,25 @@
                 <div class="col-md-12">
                   <div class="card">
                     <div class="card-header">
-                        <div class="d-flex align-items-center">
+                        <div class="d-flex justify-content-between">
                             <h4 class="card-title">Laporan Absnesi Kelas {{kelas.nama}}</h4>
+                            <form method="POST" action="{% url 'guru:cetak_laporan' %}" target="_blank">
+                              {% csrf_token %}
+                              <input type="hidden" name="id_absensi" value="{{ id_absensi }}">
+                              <div class="row">
+                                <div class="col">
+                                  <select class="form-select" name="waktu">
+                                      <option value="harian">Harian</option>
+                                      <option value="mingguan">Mingguan</option>
+                                      <option value="bulanan">Bulanan</option>
+                                      <option value="tahunan">Tahunan</option>
+                                  </select>
+                                </div>
+                                <div class="col">
+                                  <button class="btn btn-primary" type="submit">Cetak</button>
+                                </div>
+                              </div>
+                            </form>
                           </div>
                     </div>
                     <div class="card-body">

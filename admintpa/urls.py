@@ -31,6 +31,7 @@ urlpatterns = [
     path('mapel/hapus/', views.hapus_mapel, name='hapus_mapel'),
     path('laporan/', views.laporan, name='laporan'),
     path('laporan/lihat/', views.laporan_kelas, name='laporan_kelas'),
+    path('laporan/cetak/', views.cetak_laporan, name='cetak_laporan'),
     # path('laporan/kelas2/', views.laporan_kelas2, name='laporan_kelas2'),
     # path('laporan/kelas3/', views.laporan_kelas3, name='laporan_kelas3'),
 ]
